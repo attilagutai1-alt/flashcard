@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Szövegkönyv Tanulókártya</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f7;
+    --border: #e0e0e0;
+    --border-h: #c0c0c0;
+    --text: #1a1a1a;
+    --dim: #6b6b6b;
+    --light: #999;
+    --accent: #0066ff;
+    --accent-bg: #e8f0ff;
+    --accent-h: #0052cc;
+    --green: #16a34a;
+    --green-bg: #f0faf4;
+    --green-bd: #d1f0dc;
+    --red: #dc2626;
+    --red-bg: #fef5f5;
+    --red-bd: #f0d1d1;
+    --R: 12px;
+    --r: 8px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:Arial,Helvetica,sans-serif; min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+  .page { display:none; min-height:100vh; flex-direction:column; align-items:center; padding:2.5rem 1.5rem; }
+  .page.active { display:flex; }
+
+  .app-title { font-size:clamp(1.6rem,4vw,2.2rem); font-weight:700; text-align:center; margin-bottom:.25rem; letter-spacing:-.02em; }
+  .app-subtitle { font-size:.95rem; color:var(--dim); margin-bottom:2.5rem; text-align:center; }
+
+  .upload-area { width:100%; max-width:640px; border:2px dashed var(--border); border-radius:var(--R); padding:2.2rem 1.5rem; text-align:center; cursor:pointer; transition:all .2s; margin-bottom:2.5rem; position:relative; }
+  .upload-area:hover,.upload-area.dragover { border-color:var(--accent); background:var(--accent-bg); }
+  .upload-area input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .upload-icon { width:48px; height:48px; margin:0 auto .8rem; background:var(--bg2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+  .upload-label { font-size:1rem; font-weight:600; margin-bottom:.25rem; }
+  .upload-hint { font-size:.85rem; color:var(--light); }
+
+  .section-label { width:100%; max-width:640px; font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--light); margin-bottom:.8rem; }
+  .scenes-list { width:100%; max-width:640px; display:flex; flex-direction:column; gap:.6rem; }
+
+  .scene-card { background:var(--bg); border:1px solid var(--border); border-radius:var(--r); padding:1rem 1.2rem; display:flex; align-items:center; gap:1rem; transition:all .15s; }
+  .scene-card:hover { box-shadow:0 1px 3px rgba(0,0,0,.06); border-color:var(--border-h); }
+  .scene-card-body { flex:1; cursor:pointer; min-width:0; }
+  .scene-card h3 { font-size:1rem; font-weight:600; margin-bottom:.2rem; transition:color .15s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .scene-card-body:hover h3 { color:var(--accent); }
+  .scene-meta { font-size:.82rem; color:var(--dim); display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+  .tag { display:inline-block; background:var(--bg2); border-radius:4px; padding:.15rem .5rem; font-size:.75rem; color:var(--dim); font-weight:600; }
+
+  .delete-btn { background:none; border:1px solid transparent; color:var(--light); font-size:1rem; width:34px; height:34px; border-radius:6px; cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .delete-btn:hover { color:var(--red); border-color:var(--red-bd); background:var(--red-bg); }
+  .empty-state { text-align:center; padding:3rem 1rem; color:var(--light); font-size:.95rem; }
+
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:100; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(4px); }
+  .modal-overlay.active { display:flex; }
+  .modal { background:var(--bg); border-radius:var(--R); padding:1.8rem; max-width:400px; width:100%; max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,.1); }
+  .modal h2 { font-size:1.15rem; font-weight:700; margin-bottom:.3rem; }
+  .modal p { font-size:.9rem; color:var(--dim); margin-bottom:1rem; line-height:1.5; }
+  .modal-filename { font-size:.82rem; color:var(--light); margin-bottom:1rem; word-break:break-all; }
+  .role-list { display:flex; flex-direction:column; gap:.4rem; margin-bottom:1.5rem; }
+  .role-option { background:var(--bg); border:1px solid var(--border); border-radius:var(--r); padding:.65rem 1rem; cursor:pointer; transition:all .15s; color:var(--text); font-family:Arial,Helvetica,sans-serif; font-size:.92rem; text-align:left; display:flex; justify-content:space-between; align-items:center; }
+  .role-option:hover { border-color:var(--accent); background:var(--accent-bg); }
+  .role-option.selected { border-color:var(--accent); background:var(--accent-bg); font-weight:600; }
+  .role-option .line-count { font-size:.8rem; color:var(--light); font-weight:400; }
+  .modal-actions { display:flex; gap:.6rem; }
+  .modal-btn { flex:1; padding:.65rem; border-radius:var(--r); border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:Arial,Helvetica,sans-serif; font-size:.92rem; font-weight:600; cursor:pointer; transition:all .15s; }
+  .modal-btn:hover { background:var(--bg2); }
+  .modal-btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .modal-btn.primary:hover { background:var(--accent-h); }
+  .modal-btn.primary:disabled { opacity:.35; cursor:default; }
+  .modal-btn.danger { background:var(--red); border-color:var(--red); color:#fff; }
+  .modal-btn.danger:hover { background:#b91c1c; }
+  .confirm-text { font-size:.92rem; margin-bottom:1.5rem; line-height:1.5; }
+  .confirm-title { font-weight:700; }
+
+  .top-bar { width:100%; max-width:600px; display:flex; align-items:center; justify-content:space-between; margin-bottom:1.2rem; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--dim); font-family:Arial,Helvetica,sans-serif; font-size:.88rem; font-weight:600; padding:.45rem .9rem; border-radius:var(--r); cursor:pointer; transition:all .15s; }
+  .back-btn:hover { border-color:var(--border-h); color:var(--text); background:var(--bg2); }
+  .progress-text { font-size:.92rem; font-weight:600; color:var(--dim); }
+  .progress-bar-container { width:100%; max-width:600px; height:4px; background:var(--bg2); border-radius:2px; margin-bottom:2rem; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .35s ease; }
+
+  .card-container { width:100%; max-width:600px; min-height:260px; perspective:1000px; cursor:pointer; margin-bottom:1.5rem; -webkit-tap-highlight-color:transparent; }
+  .card-inner { position:relative; width:100%; min-height:260px; transition:transform .45s cubic-bezier(.4,0,.2,1); transform-style:preserve-3d; }
+  .card-inner.flipped { transform:rotateY(180deg); }
+  .card-face { position:absolute; top:0; left:0; width:100%; min-height:260px; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:var(--R); padding:2rem; display:flex; flex-direction:column; justify-content:center; }
+  .card-front { background:var(--green-bg); border:1px solid var(--green-bd); }
+  .card-back { background:var(--red-bg); border:1px solid var(--red-bd); transform:rotateY(180deg); }
+  .card-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-bottom:.9rem; display:flex; align-items:center; gap:.4rem; }
+  .card-front .card-label { color:var(--green); }
+  .card-back .card-label { color:var(--red); }
+  .label-dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+  .card-front .label-dot { background:var(--green); }
+  .card-back .label-dot { background:var(--red); }
+  .card-speaker { font-size:.88rem; font-weight:700; color:var(--dim); margin-bottom:.5rem; }
+  .card-text { font-size:clamp(1.1rem,2.8vw,1.35rem); line-height:1.65; }
+  .flip-hint { font-size:.78rem; color:var(--light); text-align:center; margin-top:auto; padding-top:1.2rem; }
+
+  .card-nav { display:flex; gap:.8rem; width:100%; max-width:600px; }
+  .nav-btn { flex:1; padding:.8rem; border-radius:var(--r); border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:Arial,Helvetica,sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; transition:all .15s; }
+  .nav-btn:hover:not(:disabled) { background:var(--bg2); border-color:var(--border-h); }
+  .nav-btn:disabled { opacity:.3; cursor:default; }
+  .nav-btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .nav-btn.primary:hover:not(:disabled) { background:var(--accent-h); }
+
+  .keyboard-hint { margin-top:2rem; font-size:.78rem; color:var(--light); text-align:center; }
+  .keyboard-hint kbd { display:inline-block; background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:.1rem .45rem; font-family:Arial,Helvetica,sans-serif; font-size:.72rem; margin:0 .1rem; }
+
+  @media(max-width:500px) {
+    .card-face { padding:1.5rem; min-height:220px; }
+    .card-inner { min-height:220px; }
+    .card-container { min-height:220px; }
+    .keyboard-hint { display:none; }
+    .page { padding:1.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page active" id="page-select">
+  <h1 class="app-title">Szövegkönyv Tanulókártya</h1>
+  <p class="app-subtitle">Töltsd fel a szövegkönyvet és gyakorolj</p>
+  <div class="upload-area" id="upload-area">
+    <input type="file" accept=".txt" id="file-input">
+    <div class="upload-icon">📄</div>
+    <div class="upload-label">Szövegkönyv feltöltése</div>
+    <div class="upload-hint">.txt fájl — „Beszélő: Szöveg" formátumban</div>
+  </div>
+  <div class="section-label" id="list-label" style="display:none;">Szövegkönyvek</div>
+  <div class="scenes-list" id="scenes-list"></div>
+</div>
+
+<div class="page" id="page-flashcard">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showSelect()">← Vissza</button>
+    <div class="progress-text" id="progress-text"></div>
+  </div>
+  <div class="progress-bar-container"><div class="progress-bar-fill" id="progress-bar"></div></div>
+  <div class="card-container" onclick="flipCard()">
+    <div class="card-inner" id="card-inner">
+      <div class="card-face card-front">
+        <div class="card-label"><span class="label-dot"></span> Felütés</div>
+        <div class="card-speaker" id="front-speaker"></div>
+        <div class="card-text" id="front-text"></div>
+        <div class="flip-hint">kattints a megfordításhoz</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-label"><span class="label-dot"></span> Te mondod</div>
+        <div class="card-speaker" id="back-speaker"></div>
+        <div class="card-text" id="back-text"></div>
+        <div class="flip-hint">kattints a visszafordításhoz</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-nav">
+    <button class="nav-btn" id="prev-btn" onclick="prevCard()">← Előző</button>
+    <button class="nav-btn primary" id="next-btn" onclick="nextCard()">Következő →</button>
+  </div>
+  <div class="keyboard-hint"><kbd>←</kbd> <kbd>→</kbd> navigáció · <kbd>Space</kbd> megfordítás</div>
+</div>
+
+<div class="modal-overlay" id="modal-role">
+  <div class="modal">
+    <h2>Szerep kiválasztása</h2>
+    <div class="modal-filename" id="modal-filename"></div>
+    <p>Melyik szerep szövegét tanulod?</p>
+    <div class="role-list" id="role-list"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal('modal-role')">Mégse</button>
+      <button class="modal-btn primary" id="btn-save-script" disabled onclick="saveScript()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal">
+    <h2>Szövegkönyv törlése</h2>
+    <div class="confirm-text">Biztosan törölni akarod?<br><strong class="confirm-title" id="delete-title"></strong></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal('modal-delete')">Mégse</button>
+      <button class="modal-btn danger" onclick="confirmDelete()">Törlés</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function loadScripts(){try{return JSON.parse(localStorage.getItem('scripts')||'[]')}catch{return[]}}
+function saveScripts(a){localStorage.setItem('scripts',JSON.stringify(a))}
+
+function parseScript(text){
+  const lines=text.split('\n'),parsed=[];
+  let cur=null,txt='';
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line)continue;
+    const m=line.match(/^([A-ZÁÉÍÓÖŐÚÜŰa-záéíóöőúüű][A-ZÁÉÍÓÖŐÚÜŰa-záéíóöőúüű\s.\-']*?)\s*:\s*(.+)$/);
+    if(m){if(cur&&txt)parsed.push({speaker:cur.trim(),text:txt.trim()});cur=m[1];txt=m[2]}
+    else if(cur){txt+=' '+line}
+  }
+  if(cur&&txt)parsed.push({speaker:cur.trim(),text:txt.trim()});
+  return parsed;
+}
+
+function getSpeakers(p){const c={};for(const l of p)c[l.speaker]=(c[l.speaker]||0)+1;return Object.entries(c).sort((a,b)=>b[1]-a[1])}
+
+function generateCards(parsed,myRole){
+  const cards=[];
+  for(let i=0;i<parsed.length;i++){
+    if(parsed[i].speaker===myRole&&i>0)
+      cards.push({frontSpeaker:parsed[i-1].speaker,front:parsed[i-1].text,backSpeaker:myRole,back:parsed[i].text});
+  }
+  return cards;
+}
+
+let pendingParsed=null,pendingFilename='',selectedRole=null;
+let deleteTargetId=null,currentScriptId=null;
+let currentCards=[],currentCardIdx=0,isFlipped=false;
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function renderList(){
+  const scripts=loadScripts(),list=document.getElementById('scenes-list'),label=document.getElementById('list-label');
+  if(!scripts.length){label.style.display='none';list.innerHTML='<div class="empty-state">Még nincs feltöltött szövegkönyv.</div>';return}
+  label.style.display='block';
+  list.innerHTML=scripts.map(s=>`
+    <div class="scene-card">
+      <div class="scene-card-body" onclick="openScript('${s.id}')">
+        <h3>${esc(s.title)}</h3>
+        <div class="scene-meta">${esc(s.myRole)} szerepe <span class="tag">${s.cards.length} kártya</span> <span class="tag">${s.speakers.join(', ')}</span></div>
+      </div>
+      <button class="delete-btn" onclick="askDelete('${s.id}')" title="Törlés">✕</button>
+    </div>`).join('');
+}
+
+const fileInput=document.getElementById('file-input'),uploadArea=document.getElementById('upload-area');
+fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);fileInput.value=''});
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('dragover')});
+uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('dragover');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])});
+
+function handleFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const parsed=parseScript(e.target.result);
+    if(parsed.length<2){alert('Nem sikerült felismerni.\nElvárt: „Beszélő: Szöveg" soronként.');return}
+    pendingParsed=parsed;pendingFilename=file.name.replace(/\.txt$/i,'');selectedRole=null;showRoleModal(parsed);
+  };reader.readAsText(file);
+}
+
+function showRoleModal(parsed){
+  const speakers=getSpeakers(parsed);
+  document.getElementById('modal-filename').textContent=pendingFilename;
+  document.getElementById('role-list').innerHTML=speakers.map(([name,count])=>`
+    <button class="role-option" data-role="${esc(name)}" onclick="selectRole(this)">${esc(name)}<span class="line-count">${count} sor</span></button>`).join('');
+  document.getElementById('btn-save-script').disabled=true;openModal('modal-role');
+}
+
+function selectRole(el){selectedRole=el.dataset.role;document.querySelectorAll('.role-option').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');document.getElementById('btn-save-script').disabled=false}
+
+function saveScript(){
+  if(!pendingParsed||!selectedRole)return;
+  const cards=generateCards(pendingParsed,selectedRole);
+  if(!cards.length){alert('Nem jött létre kártya ezzel a szereppel.');return}
+  const speakers=[...new Set(pendingParsed.map(l=>l.speaker))];
+  const scripts=loadScripts();
+  scripts.push({id:'s_'+Date.now(),title:pendingFilename,myRole:selectedRole,speakers,cards});
+  saveScripts(scripts);closeModal('modal-role');renderList();
+}
+
+function askDelete(id){deleteTargetId=id;const s=loadScripts().find(x=>x.id===id);document.getElementById('delete-title').textContent=s?s.title:'';openModal('modal-delete')}
+function confirmDelete(){if(!deleteTargetId)return;saveScripts(loadScripts().filter(s=>s.id!==deleteTargetId));deleteTargetId=null;closeModal('modal-delete');renderList()}
+
+function openModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active')})});
+
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function showSelect(){showPage('page-select');currentScriptId=null}
+
+function openScript(id){
+  const s=loadScripts().find(x=>x.id===id);if(!s)return;
+  currentScriptId=id;currentCards=s.cards;currentCardIdx=0;isFlipped=false;
+  showPage('page-flashcard');renderCard();
+}
+
+function renderCard(){
+  const card=currentCards[currentCardIdx],total=currentCards.length;
+  document.getElementById('front-speaker').textContent=card.frontSpeaker+':';
+  document.getElementById('front-text').textContent=card.front;
+  document.getElementById('back-speaker').textContent=card.backSpeaker+':';
+  document.getElementById('back-text').textContent=card.back;
+  document.getElementById('progress-text').textContent=`${currentCardIdx+1} / ${total}`;
+  document.getElementById('progress-bar').style.width=`${((currentCardIdx+1)/total)*100}%`;
+  document.getElementById('prev-btn').disabled=currentCardIdx===0;
+  document.getElementById('next-btn').disabled=currentCardIdx===total-1;
+  isFlipped=false;document.getElementById('card-inner').classList.remove('flipped');
+}
+
+function flipCard(){isFlipped=!isFlipped;document.getElementById('card-inner').classList.toggle('flipped',isFlipped)}
+function nextCard(){if(currentCardIdx<currentCards.length-1){currentCardIdx++;renderCard()}}
+function prevCard(){if(currentCardIdx>0){currentCardIdx--;renderCard()}}
+
+document.addEventListener('keydown',e=>{
+  if(document.querySelector('.modal-overlay.active'))return;
+  if(!currentScriptId)return;
+  if(e.key==='ArrowRight')nextCard();
+  else if(e.key==='ArrowLeft')prevCard();
+  else if(e.key===' '){e.preventDefault();flipCard()}
+  else if(e.key==='Escape')showSelect();
+});
+
+renderList();
+</script>
+</body>
+</html>
