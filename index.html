@@ -187,8 +187,44 @@
 </div>
 
 <script>
+// === BEÉGETETT SZÖVEGKÖNYVEK ===
+const builtIn=[
+  {
+    id:"builtin_baratokkozt_8223",
+    title:"Barátok közt \u2013 8223. r\u00e9sz",
+    myRole:"Nimr\u00f3d",
+    speakers:["Lenke","Nimr\u00f3d"],
+    builtIn:true,
+    cards:[
+      {frontSpeaker:"Lenke",front:"Na, gyere, mert kezd\u0151dik!",backSpeaker:"Nimr\u00f3d",back:"M\u00e1r most?"},
+      {frontSpeaker:"Lenke",front:"Aha!",backSpeaker:"Nimr\u00f3d",back:"H\u00faha! \u00c9s ez a 8223. r\u00e9sz. Sose lesz v\u00e9ge ennek a sztorinak?"},
+      {frontSpeaker:"Lenke",front:"Sh! Akarom \u00e9nekelni a f\u0151c\u00edmdalt!",backSpeaker:"Nimr\u00f3d",back:"\u00daj \u00e9let v\u00e1r felejts el mindent!"},
+      {frontSpeaker:"Lenke",front:"Mindent, ami f\u00e1j!",backSpeaker:"Nimr\u00f3d",back:"M\u00e1r nem f\u00e1j semmi."},
+      {frontSpeaker:"Lenke",front:"Mit \u00fcgyk\u00f6dik m\u00e1r megint?",backSpeaker:"Nimr\u00f3d",back:"Hallod ez a bolond Mikl\u00f3s ki akar k\u00f6lt\u00f6zni B\u00e9csbe. Nem norm\u00e1lis."},
+      {frontSpeaker:"Lenke",front:"Am\u00fagy, nem tom. Szerintem \u00e9rthet\u0151. \u00c9n sz\u00edvesen lakn\u00e9k egyszer k\u00fclf\u00f6ld\u00f6n.",backSpeaker:"Nimr\u00f3d",back:"H\u00e1t de ott hagyja a N\u00f3r\u00e1t. Egyed\u00fcl! \u00c9n sose hagyn\u00e1lak egyed\u00fcl."},
+      {frontSpeaker:"Lenke",front:"H\u00e1t ja, de az\u00e9rt j\u00f3 lehet \u00edgy vil\u00e1gg\u00e1 menni. Izgi.",backSpeaker:"Nimr\u00f3d",back:"Izgi."},
+      {frontSpeaker:"Lenke",front:"Nem adod ide nekem azt a te\u00e1s b\u00f6gr\u00e9t?",backSpeaker:"Nimr\u00f3d",back:"Persze!"},
+      {frontSpeaker:"Lenke",front:"K\u00f6szi!",backSpeaker:"Nimr\u00f3d",back:"Hogy ki lenn\u00e9k, ha a lak\u00e1som alatt lenne a S\u00e1rk\u00e1nyos."},
+      {frontSpeaker:"Lenke",front:"H\u00e1t igen, biztosan m\u00e1s lehet a R\u00f3zsa pressz\u00f3 felett lakni, de nekem tetszik, hogy ilyen p\u00f6rg\u00e9s van. Mindig t\u00f6rt\u00e9nik valami. Itt soha semmi sem t\u00f6rt\u00e9nik.",backSpeaker:"Nimr\u00f3d",back:"Mi\u00e9rt te szeretn\u00e9d, ha a lak\u00e1sod alatti pressz\u00f3ban l\u00f6v\u00f6ld\u00f6zn\u00e9nek?!"},
+      {frontSpeaker:"Lenke",front:"Vesz\u00e9lyes, de izgalmas is az\u00e9rt!",backSpeaker:"Nimr\u00f3d",back:"Nekem a k\u00e9perny\u0151n teljesen el\u00e9g ez az izgalom."},
+      {frontSpeaker:"Lenke",front:"\u00c9retts\u00e9gi ut\u00e1n, ha felvesznek az Elt\u00e9re, lehet hogy odak\u00f6lt\u00f6z\u00f6k. Abba a h\u00e1zba! Vajon ki lehet b\u00e9relni azokat a lak\u00e1sokat?",backSpeaker:"Nimr\u00f3d",back:"Igen, majd a Barta Zsolttal meg a Nov\u00e1k Lacival band\u00e1zol."},
+      {frontSpeaker:"Lenke",front:"Jaj, de cuki az a kutyus. T\u00f6kre hasonl\u00edt a M\u00fctyi\u00fcrre.",backSpeaker:"Nimr\u00f3d",back:"Pont ezt akartam mondani! N\u00e9zd, M\u00fctyi\u00fcr benne vagy a tv-ben. \u00daristen M\u00fctyi\u00fcr h\u00edres lett\u00e9l."},
+      {frontSpeaker:"Lenke",front:"Igen.",backSpeaker:"Nimr\u00f3d",back:"Egy az egyben!"},
+      {frontSpeaker:"Nimr\u00f3d",front:"Egy az egyben!",backSpeaker:"Nimr\u00f3d",back:"Rem\u00e9lem mi nem fogunk 10 \u00e9v m\u00falva olyan sokat veszekedni, mint az a Zs\u00f3fi meg a Zsolt. Nem akarlak soha elvesz\u00edteni."},
+      {frontSpeaker:"Lenke",front:"Mi neem.",backSpeaker:"Nimr\u00f3d",back:"Hogy b\u00edrj\u00e1k?"},
+      {frontSpeaker:"Lenke",front:"Nek\u00fcnk van egy ilyen t\u00f6k j\u00f3 m\u0171k\u00f6d\u00e9s\u00fcnk.",backSpeaker:"Nimr\u00f3d",back:"Az biztos."},
+      {frontSpeaker:"Lenke",front:"Ilyen optim\u00e1lis.",backSpeaker:"Nimr\u00f3d",back:"Ha veszeksz\u00fcnk is, akkor is kib\u00e9k\u00fcl\u00fcnk."},
+      {frontSpeaker:"Lenke",front:"Igen, igen.",backSpeaker:"Nimr\u00f3d",back:"Ezek meg csak veszekednek."},
+      {frontSpeaker:"Lenke",front:"Tegnap is \u00f6sszevesztek valamin. De mi meg tudjuk besz\u00e9lni.",backSpeaker:"Nimr\u00f3d",back:"De ez nem ilyen szint\u0171. Itt ilyen bizniszekben vannak a Klaudiával. Ez sokkal komolyabb."},
+      {frontSpeaker:"Lenke",front:"10 \u00e9v m\u00falva mi sokkal \u00e9rettebbek lesz\u00fcnk.",backSpeaker:"Nimr\u00f3d",back:"Meg lesz egy nagy h\u00e1zunk. Meg kuty\u00e1nk."},
+      {frontSpeaker:"Lenke",front:"A Nov\u00e1k Laci kicsit el van h\u00edzva.",backSpeaker:"Nimr\u00f3d",back:"Rem\u00e9lem sose leszek ilyen k\u00f6v\u00e9r!"}
+    ]
+  }
+];
+
 function loadScripts(){try{return JSON.parse(localStorage.getItem('scripts')||'[]')}catch{return[]}}
 function saveScripts(a){localStorage.setItem('scripts',JSON.stringify(a))}
+function allScripts(){return[...builtIn,...loadScripts()]}
 
 function parseScript(text){
   const lines=text.split('\n'),parsed=[];
@@ -222,7 +258,7 @@ let currentCards=[],currentCardIdx=0,isFlipped=false;
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
 function renderList(){
-  const scripts=loadScripts(),list=document.getElementById('scenes-list'),label=document.getElementById('list-label');
+  const scripts=allScripts(),list=document.getElementById('scenes-list'),label=document.getElementById('list-label');
   if(!scripts.length){label.style.display='none';list.innerHTML='<div class="empty-state">Még nincs feltöltött szövegkönyv.</div>';return}
   label.style.display='block';
   list.innerHTML=scripts.map(s=>`
@@ -231,7 +267,7 @@ function renderList(){
         <h3>${esc(s.title)}</h3>
         <div class="scene-meta">${esc(s.myRole)} szerepe <span class="tag">${s.cards.length} kártya</span> <span class="tag">${s.speakers.join(', ')}</span></div>
       </div>
-      <button class="delete-btn" onclick="askDelete('${s.id}')" title="Törlés">✕</button>
+      ${s.builtIn?'':'<button class="delete-btn" onclick="askDelete(\''+s.id+'\')" title="Törlés">✕</button>'}
     </div>`).join('');
 }
 
@@ -270,7 +306,7 @@ function saveScript(){
   saveScripts(scripts);closeModal('modal-role');renderList();
 }
 
-function askDelete(id){deleteTargetId=id;const s=loadScripts().find(x=>x.id===id);document.getElementById('delete-title').textContent=s?s.title:'';openModal('modal-delete')}
+function askDelete(id){deleteTargetId=id;const s=allScripts().find(x=>x.id===id);document.getElementById('delete-title').textContent=s?s.title:'';openModal('modal-delete')}
 function confirmDelete(){if(!deleteTargetId)return;saveScripts(loadScripts().filter(s=>s.id!==deleteTargetId));deleteTargetId=null;closeModal('modal-delete');renderList()}
 
 function openModal(id){document.getElementById(id).classList.add('active')}
@@ -281,7 +317,7 @@ function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.
 function showSelect(){showPage('page-select');currentScriptId=null}
 
 function openScript(id){
-  const s=loadScripts().find(x=>x.id===id);if(!s)return;
+  const s=allScripts().find(x=>x.id===id);if(!s)return;
   currentScriptId=id;currentCards=s.cards;currentCardIdx=0;isFlipped=false;
   showPage('page-flashcard');renderCard();
 }
